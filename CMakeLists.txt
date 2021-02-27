@@ -1,13 +1,27 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.12)
 
-set(APP_NAME print)
-if (DEFINED $ENV{TRAVIS_BUILD_NUMBER})
+option(CHECK_DOXYGEN "enable doc generation" ON)
+
+set(APP_NAME print-ip)
+if (DEFINED ENV{TRAVIS_BUILD_NUMBER})
     project(${APP_NAME} VERSION 0.0.$ENV{TRAVIS_BUILD_NUMBER})
 else()
     project(${APP_NAME} VERSION 0.0.1)
 endif()
 
 configure_file(version.h.in version.h)
+
+if (${CHECK_DOXYGEN} STREQUAL ON)
+    find_package(Doxygen)
+    if (DOXYGEN_FOUND)
+        set(DOXYFILE ${CMAKE_SOURCE_DIR}/Doxyfile)
+        add_custom_target(doc_doxygen ALL
+            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE} 
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMENT "Generating API documentation with Doxygen")
+        unset(DOXYFILE)
+    endif()
+endif()
 
 add_executable(${APP_NAME} main.cpp)
 
